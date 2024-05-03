@@ -114,6 +114,84 @@ Origin detection in non-Kubernetes environments is based on an extension of the 
 [1]: /developers/dogstatsd/unix_socket/
 [2]: /developers/dogstatsd/datagram_shell/?tab=metrics#dogstatsd-protocol-v12
 {{% /tab %}}
+{{% tab "Operator" %}}
+
+StatsD metrics collection is enabled by default on [Unix domain socket][1]. To start collecting your StatsD metrics over UDP, you need to activate the DogStatsD feature in the Operator settings.
+
+1. Add `features.dogstatsd.hostPortConfig.enabled` to your `datadog-operator.yaml` manifest:
+
+    ```yaml
+    features:
+        dogstatsd:
+            hostPortConfig:
+                enabled: true
+    ```
+
+    This enables the Agent to collect StatsD metrics UDP on port `8125`.
+    **Note**: For an Operator deployment, configure the host port with `features.dogstatsd.hostPortConfig.hostPort`.
+
+2. Apply the change:
+
+    ```shell
+    kubectl apply -f datadog-operator.yaml
+    ```
+
+**Warning**: The `hostPort` parameter opens a port on your host. Make sure your firewall only allows access from your applications or trusted sources. If your network plugin doesn't support `hostPorts`, so add `hostNetwork: true` in your Agent pod specifications. This shares the network namespace of your host with the Datadog Agent. It also means that all ports opened on the container are opened on the host. If a port is used both on the host and in your container, they conflict (since they share the same network namespace) and the pod does not start. Some Kubernetes installations do not allow this.
+
+### Send StatsD metrics to the Agent
+
+Your application needs a reliable way to determine the IP address of its host. This is made simple in Kubernetes 1.7, which expands the set of attributes you can pass to your pods as environment variables. In versions 1.7 and above, you can pass the host IP to any pod by adding an environment variable to the PodSpec. For instance, your application manifest might look like this:
+
+```yaml
+env:
+    - name: DD_AGENT_HOST
+      valueFrom:
+          fieldRef:
+              fieldPath: status.hostIP
+```
+
+With this, any pod running your application is able to send DogStatsD metrics with port `8125` on `$DD_AGENT_HOST`.
+
+**Note**: As a best practice, Datadog recommends using unified service tagging when assigning attributes. Unified service tagging ties Datadog telemetry together through the use of three standard tags: `env`, `service`, and `version`. To learn how to unify your environment, see [unified service tagging][4].
+
+#### Origin detection over UDP
+
+Origin detection is supported in Agent 6.10.0+ and allows DogStatsD to detect where the container metrics come from, and tag metrics automatically. When this mode is enabled, all metrics received through UDP are tagged by the same pod tags as Autodiscovery metrics.
+
+1. To activate Origin Detection, add the `features.dogstatsd.originDetectionUnifiedEnabled` setting to your `datadog-operator.yaml` manifest:
+
+    ```yaml
+    features:
+        dogstatsd:
+            originDetectionUnifiedEnabled: true
+    ```
+
+**Notes**: 
+* Origin detection with UDP can use the pod ID as the entity ID.
+* An alternative to UDP is [Unix Domain Sockets][5].
+
+To use pod ID as the entity ID, add the following lines to your application manifest:
+
+```yaml
+env:
+    - name: DD_ENTITY_ID
+      valueFrom:
+          fieldRef:
+              fieldPath: metadata.uid
+```
+
+To set [tag cardinality][6] for the metrics collected using origin detection, set the setting `features.dogstatsd.tagCardinality` to either `low` (default), `orchestrator` or `high`.
+
+**Note:** For UDP, `pod_name` tags are not added by default to avoid creating too many [custom metrics][7].
+
+[1]: /developers/dogstatsd/unix_socket/
+[2]: https://github.com/containernetworking/cni
+[3]: https://kubernetes.io/docs/setup/independent/troubleshooting-kubeadm/#hostport-services-do-not-work
+[4]: /getting_started/tagging/unified_service_tagging
+[5]: /developers/dogstatsd/unix_socket/?tab=host#using-origin-detection-for-container-tagging
+[6]: /getting_started/tagging/assigning_tags/#environment-variables
+[7]: /metrics/custom_metrics/
+{{% /tab %}}
 {{% tab "Kubernetes" %}}
 
 To start collecting your StatsD metrics, you need to bind the DogStatsD port to a host port. You can also configure DogStatsD to use a [Unix domain socket][1].
