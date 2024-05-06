@@ -67,7 +67,7 @@ For a full list of Datadog's .NET runtime, OS, and architecture support (includi
 </div>
 
 <div class="alert alert-warning">
-  <strong>Note:</strong> Datadog's automatic instrumentation relies on the .NET CLR Profiling API. This API allows only one subscriber at a time (for example, Datadog's .NET Library). To ensure maximum visibility, run only one APM solution in your application environment.
+  <strong>Note:</strong> Datadog's automatic instrumentation relies on the .NET CLR Profiling API. This API allows only one subscriber at a time (for example, Datadog's .NET Tracing Library). To ensure maximum visibility, run only one APM solution in your application environment.
 </div>
 
 <div class="alert alert-info">
