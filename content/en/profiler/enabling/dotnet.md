@@ -402,7 +402,7 @@ To install the .NET Profiler per-webapp:
 
 {{% tab "Adimission Controller" %}}
 
-2. With the admission controller, set the following required environment variables in your deployment or Helm chart.
+2. If you are using the admission controller, set the following required environment variables in your deployment or Helm chart.
 
    ```
    env:
