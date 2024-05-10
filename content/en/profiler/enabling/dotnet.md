@@ -143,6 +143,14 @@ To install the .NET Profiler per-webapp:
 [2]: /serverless/azure_app_services/azure_app_services_linux/?tab=nodenetphppython#setup
 {{% /tab %}}
 
+{{% tab "Adimission Controller" %}}
+1. Follow these installation guidelines [Operator][1], [Helm][2] or [DaemonSet][3].
+   
+[1]: /containers/cluster_agent/admission_controller/?tab=operator
+[2]: /containers/cluster_agent/admission_controller/?tab=helm
+[3]: /containers/cluster_agent/admission_controller/?tab=daemonset
+{{% /tab %}}
+
 {{< /tabs >}}
 
 <br>
@@ -390,6 +398,33 @@ To install the .NET Profiler per-webapp:
 [2]: /serverless/azure_app_services/azure_app_services_linux/?tab=nodenetphppython#setup
 {{% /tab %}}
 
+{{% /tab %}}
+{{% tab "Adimission Controller" %}}
+2. With the admission controller, set the following required environment variables in your deployment or Helm chart.
+
+   ```
+   env:
+   - name: CORECLR_ENABLE_PROFILING
+     value: 'true'
+   - name: CORECLR_PROFILER
+     value: '{846F5F1C-F9AE-4B07-969E-05C26BC060D8}'
+   - name: CORECLR_PROFILER_PATH
+     value: '/datadog-lib/Datadog.Trace.ClrProfiler.Native.so'
+   - name: DD_DOTNET_TRACER_HOME
+     value: '/datadog-lib'
+   - name: LD_PRELOAD
+     value: '/datadog-lib/continuousprofiler/Datadog.Linux.ApiWrapper.x64.so'
+   - name: DD_PROFILING_ENABLED
+     value: 'true'
+   ```
+3. By default, the profile is only enabled if the CPU limit is greater than or equal to 1000m. It's possible to use the env DD_PROFILING_MIN_CORES_THRESHOLD to allow the use of values lower than 1000m. In this example, we use 500m:
+   ```
+    env:
+    - name: DD_PROFILING_MIN_CORES_THRESHOLD
+      value: 0.5
+   ```
+
+{{% /tab %}}
 {{< /tabs >}}
 
 
