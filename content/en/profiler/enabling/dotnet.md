@@ -423,7 +423,7 @@ To install the .NET Profiler per-webapp:
    ```
     env:
     - name: DD_PROFILING_MIN_CORES_THRESHOLD
-      value: 0.5
+      value: '0.5'
    ```
 
 {{% /tab %}}
